@@ -1,0 +1,36 @@
+name: reusable - security - codeql
+on:
+  workflow_call:
+    inputs:
+      language:
+        description: CodeQL language to analyse (e.g. go, python, javascript)
+        type: string
+        required: true
+      go-version-file:
+        description: Path to go.mod (only used when language is go)
+        type: string
+        default: go.mod
+jobs:
+  analyze:
+    name: analyze (${{ inputs.language }})
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      packages: read
+      actions: read
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - name: set up Go
+        if: inputs.language == 'go'
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: ${{ inputs.go-version-file }}
+          cache: true
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ inputs.language }}
+      - uses: github/codeql-action/autobuild@v3
+      - uses: github/codeql-action/analyze@v3
+        with:
+          category: /language:${{ inputs.language }}
