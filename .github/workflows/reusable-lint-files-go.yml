@@ -1,0 +1,43 @@
+name: reusable - lint - files - *.go, *.sum
+on:
+  workflow_call:
+    inputs:
+      go-version-file:
+        description: Path to go.mod to derive the Go version from
+        type: string
+        default: go.mod
+      gowork:
+        description: Set to "on" to enable Go workspace mode
+        type: string
+        default: "off"
+jobs:
+  golangci-lint:
+    name: golangci-lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: ${{ inputs.go-version-file }}
+          cache: true
+      - uses: golangci/golangci-lint-action@v9
+        with:
+          version: latest
+        env:
+          GOWORK: ${{ inputs.gowork }}
+  go-mod-verify:
+    name: go mod verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: ${{ inputs.go-version-file }}
+          cache: true
+      - name: verify go.sum
+        run: go mod verify
+      - name: check go mod tidy
+        run: |
+          go mod tidy
+          git diff --exit-code go.mod go.sum
+

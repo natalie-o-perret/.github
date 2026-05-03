@@ -1,0 +1,15 @@
+name: reusable - lint - files - *.yml, *.yaml
+on:
+  workflow_call:
+jobs:
+  yaml-lint:
+    name: yaml lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ibiqlik/action-yamllint@v3
+        with:
+          config_file: .yamllint.yml
+          file_or_dir: .
+          strict: true
+
