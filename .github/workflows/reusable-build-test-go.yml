@@ -1,0 +1,61 @@
+name: reusable - build + tests - go
+on:
+  workflow_call:
+    inputs:
+      go-versions:
+        description: JSON array of Go versions to test against e.g. '["1.24","1.26"]'
+        type: string
+        default: '["1.24","1.26"]'
+      go-version-latest:
+        description: The latest Go version (used for coverage gate, govulncheck, upload)
+        type: string
+        default: "1.26"
+      coverage-threshold:
+        description: Minimum required total coverage percentage
+        type: number
+        default: 80
+jobs:
+  test:
+    name: test (${{ matrix.go }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go: ${{ fromJson(inputs.go-versions) }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version: ${{ matrix.go }}
+          cache: true
+      - name: download deps
+        run: go mod download
+      - name: vet
+        run: go vet ./...
+      - name: test
+        run: go test -race -coverprofile=coverage.out ./...
+      - name: coverage gate (>= ${{ inputs.coverage-threshold }}%)
+        if: matrix.go == inputs.go-version-latest
+        run: |
+          total=$(go tool cover -func=coverage.out | awk '/^total:/ {gsub(/%/,"",$3); print $3}')
+          echo "Total coverage: ${total}%"
+          awk -v t="$total" -v threshold="${{ inputs.coverage-threshold }}" \
+            'BEGIN { if (t+0 < threshold+0) { print "Coverage " t "% is below " threshold "% threshold"; exit 1 } }'
+      - name: upload coverage
+        if: matrix.go == inputs.go-version-latest
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage
+          path: coverage.out
+  govulncheck:
+    name: govulncheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version: ${{ inputs.go-version-latest }}
+          cache: true
+      - name: install govulncheck
+        run: go install golang.org/x/vuln/cmd/govulncheck@latest
+      - name: run govulncheck
+        run: govulncheck ./...
