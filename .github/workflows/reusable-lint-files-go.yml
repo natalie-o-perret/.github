@@ -7,37 +7,52 @@ on:
         type: string
         default: go.mod
       gowork:
-        description: Set to "on" to enable Go workspace mode
+        description: Go workspace mode
         type: string
         default: "off"
+      working-directory:
+        description: Directory containing the Go module
+        type: string
+        default: "."
+      cache-dependency-path:
+        description: Dependency file used for the Go build cache
+        type: string
+        default: ""
 jobs:
   golangci-lint:
     name: golangci-lint
     runs-on: ubuntu-latest
+    env:
+      GOWORK: ${{ inputs.gowork }}
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-go@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
           go-version-file: ${{ inputs.go-version-file }}
           cache: true
+          cache-dependency-path: ${{ inputs.cache-dependency-path }}
       - uses: golangci/golangci-lint-action@v9
         with:
           version: latest
-        env:
-          GOWORK: ${{ inputs.gowork }}
+          working-directory: ${{ inputs.working-directory }}
   go-mod-verify:
     name: go mod verify
     runs-on: ubuntu-latest
+    env:
+      GOWORK: ${{ inputs.gowork }}
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-go@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
           go-version-file: ${{ inputs.go-version-file }}
           cache: true
+          cache-dependency-path: ${{ inputs.cache-dependency-path }}
       - name: verify go.sum
         run: go mod verify
+        working-directory: ${{ inputs.working-directory }}
       - name: check go mod tidy
         run: |
           go mod tidy
           git status --short -- go.mod go.sum
           test -z "$(git status --porcelain -- go.mod go.sum)"
+        working-directory: ${{ inputs.working-directory }}
