@@ -6,11 +6,10 @@ jobs:
     name: json lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: validate json files
         run: |
           find . -name '*.json' -not -path './.git/*' | while read f; do
             echo "Checking $f ..."
             python3 -m json.tool "$f" > /dev/null
           done
-
