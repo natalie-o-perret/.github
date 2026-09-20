@@ -14,10 +14,28 @@ on:
         description: Minimum required total coverage percentage
         type: number
         default: 80
+      working-directory:
+        description: Directory containing the Go module
+        type: string
+        default: "."
+      coverage-artifact-name:
+        description: Name of the uploaded coverage artifact
+        type: string
+        default: coverage
+      gowork:
+        description: Go workspace mode
+        type: string
+        default: "off"
+      cache-dependency-path:
+        description: Dependency file used for the Go build cache
+        type: string
+        default: ""
 jobs:
   test:
     name: test (${{ matrix.go }})
     runs-on: ubuntu-latest
+    env:
+      GOWORK: ${{ inputs.gowork }}
     strategy:
       matrix:
         go: ${{ fromJson(inputs.go-versions) }}
@@ -27,14 +45,19 @@ jobs:
         with:
           go-version: ${{ matrix.go }}
           cache: true
+          cache-dependency-path: ${{ inputs.cache-dependency-path }}
       - name: download deps
         run: go mod download
+        working-directory: ${{ inputs.working-directory }}
       - name: vet
         run: go vet ./...
+        working-directory: ${{ inputs.working-directory }}
       - name: build
         run: go build ./...
+        working-directory: ${{ inputs.working-directory }}
       - name: test
         run: go test -race -coverprofile=coverage.out ./...
+        working-directory: ${{ inputs.working-directory }}
       - name: coverage gate (>= ${{ inputs.coverage-threshold }}%)
         if: matrix.go == inputs.go-version-latest
         run: |
@@ -42,22 +65,27 @@ jobs:
           echo "Total coverage: ${total}%"
           awk -v t="$total" -v threshold="${{ inputs.coverage-threshold }}" \
             'BEGIN { if (t+0 < threshold+0) { print "Coverage " t "% is below " threshold "% threshold"; exit 1 } }'
+        working-directory: ${{ inputs.working-directory }}
       - name: upload coverage
         if: matrix.go == inputs.go-version-latest
         uses: actions/upload-artifact@v7
         with:
-          name: coverage
-          path: coverage.out
+          name: ${{ inputs.coverage-artifact-name }}
+          path: ${{ inputs.working-directory }}/coverage.out
   govulncheck:
     name: govulncheck
     runs-on: ubuntu-latest
+    env:
+      GOWORK: ${{ inputs.gowork }}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-go@v7
         with:
           go-version: ${{ inputs.go-version-latest }}
           cache: true
+          cache-dependency-path: ${{ inputs.cache-dependency-path }}
       - name: install govulncheck
         run: go install golang.org/x/vuln/cmd/govulncheck@latest
       - name: run govulncheck
         run: govulncheck ./...
+        working-directory: ${{ inputs.working-directory }}

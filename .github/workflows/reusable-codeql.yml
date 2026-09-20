@@ -10,10 +10,24 @@ on:
         description: Path to go.mod (only used when language is go)
         type: string
         default: go.mod
+      working-directory:
+        description: Directory to build
+        type: string
+        default: "."
+      gowork:
+        description: Go workspace mode
+        type: string
+        default: "off"
+      cache-dependency-path:
+        description: Dependency file used for the Go build cache
+        type: string
+        default: ""
 jobs:
   analyze:
     name: analyze (${{ inputs.language }})
     runs-on: ubuntu-latest
+    env:
+      GOWORK: ${{ inputs.gowork }}
     permissions:
       security-events: write
       packages: read
@@ -27,10 +41,13 @@ jobs:
         with:
           go-version-file: ${{ inputs.go-version-file }}
           cache: true
+          cache-dependency-path: ${{ inputs.cache-dependency-path }}
       - uses: github/codeql-action/init@v4
         with:
           languages: ${{ inputs.language }}
       - uses: github/codeql-action/autobuild@v4
+        with:
+          working-directory: ${{ inputs.working-directory }}
       - uses: github/codeql-action/analyze@v4
         with:
           category: /language:${{ inputs.language }}
