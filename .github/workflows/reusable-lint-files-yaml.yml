@@ -12,6 +12,8 @@ jobs:
           config_data: |
             extends: default
             rules:
+              comments:
+                min-spaces-from-content: 1
               document-start: disable
               empty-lines:
                 max-end: 1
