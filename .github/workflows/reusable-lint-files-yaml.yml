@@ -6,12 +6,14 @@ jobs:
     name: yaml lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: ibiqlik/action-yamllint@v3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ibiqlik/action-yamllint@2576378a8e339169678f9939646ee3ee325e845c # v3
         with:
           config_data: |
             extends: default
             rules:
+              comments:
+                min-spaces-from-content: 1
               document-start: disable
               empty-lines:
                 max-end: 1
@@ -20,3 +22,12 @@ jobs:
                 allowed-values: ["true", "false", "on"]
           file_or_dir: .
           strict: true
+  actions-lint:
+    name: actionlint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: raven-actions/actionlint@3d39aea434753780c3b3d4a1a31c854b4dbf49d7 # v2.2.0
+        with:
+          version: 1.7.12
+          pyflakes: false

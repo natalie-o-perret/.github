@@ -1,0 +1,30 @@
+name: reusable - lint - files - Go formatting
+on:
+  workflow_call:
+    inputs:
+      go-version-file:
+        description: Path to go.mod to derive the Go version from
+        type: string
+        default: go.mod
+      gowork:
+        description: Go workspace mode
+        type: string
+        default: "off"
+      working-directory:
+        description: Directory containing the Go module
+        type: string
+        default: "."
+jobs:
+  go-format:
+    name: gofmt
+    runs-on: ubuntu-latest
+    env:
+      GOWORK: ${{ inputs.gowork }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: ${{ inputs.go-version-file }}
+          cache: false
+      - run: test -z "$(gofmt -l .)"
+        working-directory: ${{ inputs.working-directory }}
