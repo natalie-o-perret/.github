@@ -1,0 +1,64 @@
+name: reusable - build + tests - gleam
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        description: Directory containing gleam.toml
+        type: string
+        default: "."
+      target:
+        description: Compilation target, erlang or javascript
+        type: string
+        default: erlang
+      gleam-version:
+        description: Gleam version
+        type: string
+        default: "1.18.1"
+      otp-version:
+        description: Erlang/OTP version
+        type: string
+        default: "29"
+      rebar3-version:
+        description: Rebar3 version
+        type: string
+        default: "3.27"
+      node-version:
+        description: Node.js version for JavaScript-target tests
+        type: string
+        default: "24"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    env:
+      GLEAM_TARGET: ${{ inputs.target }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124  # v1.24.1
+        with:
+          gleam-version: ${{ inputs.gleam-version }}
+          otp-version: ${{ inputs.otp-version }}
+          rebar3-version: ${{ inputs.rebar3-version }}
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1  # v7.1.0
+        if: inputs.target == 'javascript'
+        with:
+          node-version: ${{ inputs.node-version }}
+      - name: Check native build tools
+        if: inputs.target == 'erlang'
+        run: gcc --version && make --version
+      - name: Check formatting
+        run: gleam format --check src test
+      - name: Check types
+        run: gleam check --target "$GLEAM_TARGET"
+      - name: Run tests
+        run: gleam test --target "$GLEAM_TARGET"
