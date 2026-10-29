@@ -1,0 +1,28 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "gleam": {
+    "lockFileMaintenance": {
+      "enabled": true
+    }
+  },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/(^|/)GLEAM_VERSION$/", "/(^|/)bin/build$/"],
+      "matchStrings": [
+        "^(?<currentValue>v\\d+\\.\\d+\\.\\d+)\\s*$",
+        "# renovate: gleam-version=(?<currentValue>v\\d+\\.\\d+\\.\\d+)\\s+checksum=\"(?<currentDigest>[a-f0-9]{64})\""
+      ],
+      "datasourceTemplate": "github-release-attachments",
+      "depNameTemplate": "gleam-lang/gleam",
+      "versioningTemplate": "semver"
+    }
+  ],
+  "packageRules": [
+    {
+      "matchPackageNames": ["gleam-lang/gleam"],
+      "groupName": "Gleam compiler"
+    }
+  ]
+}
