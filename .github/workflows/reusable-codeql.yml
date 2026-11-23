@@ -38,20 +38,20 @@ jobs:
       actions: read
       contents: read
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: set up Go
         if: inputs.language == 'go'
-        uses: actions/setup-go@v7
+        uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
         with:
           go-version-file: ${{ inputs.go-version-file }}
           cache: true
           cache-dependency-path: ${{ inputs.cache-dependency-path }}
-      - uses: github/codeql-action/init@v4
+      - uses: github/codeql-action/init@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
         with:
           languages: ${{ inputs.language }}
-      - uses: github/codeql-action/autobuild@v4
+      - uses: github/codeql-action/autobuild@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
         with:
           working-directory: ${{ inputs.working-directory }}
-      - uses: github/codeql-action/analyze@v4
+      - uses: github/codeql-action/analyze@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
         with:
           category: ${{ inputs.category || format('/language:{0}', inputs.language) }}
