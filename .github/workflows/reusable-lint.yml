@@ -4,14 +4,14 @@ on:
 jobs:
   commits:
     if: github.event_name == 'pull_request'
-    uses: natalie-o-perret/.github/.github/workflows/reusable-lint-commits-conventional.yml@main
+    uses: ./.github/workflows/reusable-lint-commits-conventional.yml
     permissions:
       pull-requests: read
   go:
-    uses: natalie-o-perret/.github/.github/workflows/reusable-lint-files-go.yml@main
+    uses: ./.github/workflows/reusable-lint-files-go.yml
   json:
-    uses: natalie-o-perret/.github/.github/workflows/reusable-lint-files-json.yml@main
+    uses: ./.github/workflows/reusable-lint-files-json.yml
   md:
-    uses: natalie-o-perret/.github/.github/workflows/reusable-lint-files-md.yml@main
+    uses: ./.github/workflows/reusable-lint-files-md.yml
   yaml:
-    uses: natalie-o-perret/.github/.github/workflows/reusable-lint-files-yaml.yml@main
+    uses: ./.github/workflows/reusable-lint-files-yaml.yml
