@@ -9,7 +9,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: validate json files
         run: |
-          find . -name '*.json' -not -path './.git/*' | while read f; do
+          find . -name '*.json' -not -path './.git/*' | while IFS= read -r f; do
             echo "Checking $f ..."
             python3 -m json.tool "$f" > /dev/null
           done
